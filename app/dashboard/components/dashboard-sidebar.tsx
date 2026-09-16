@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', label: 'Resumen' },
@@ -13,7 +15,20 @@ const navItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
 
+  const handleSignOut = async () => {
+    const { error } = await authClient.signOut();
+    if ( error ) alert('Error al cerrar sesión');
+    router.replace('/');
+    // await authClient.signOut({
+    //   fetchOptions: {
+    //     onSuccess: () => {
+    //       router.push("/");
+    //     },
+    //   },
+    // });
+  }
   return (
     <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-white px-4 py-6 dark:border-zinc-800 dark:bg-zinc-950">
       <div className="mb-8 px-2">
@@ -57,6 +72,7 @@ export function DashboardSidebar() {
           Iniciar sesión
         </Link>
         <button
+          onClick={handleSignOut}
           type="button"
           className="mt-2 block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
         >
