@@ -1,18 +1,40 @@
 "use client";
 
 import type { SubmitEvent } from "react";
+import { authClient } from "@/lib/auth-client";
 import { AuthDivider } from "../components/auth-divider";
 import { AuthField } from "../components/auth-field";
 import { SocialSignInButtons } from "../components/social-sign-in-buttons";
+import { useRouter } from "next/navigation";
 
 export function RegisterForm() {
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  const router = useRouter();
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const name = formData.get("name");
-    const email = formData.get("email");
-    const password = formData.get("password");
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
     console.log("Register:", { name, email, password });
+
+    const { data, error } = await authClient.signUp.email({
+        email, // user email address
+        password, // user password -> min 8 characters by default
+        name, // user display name
+        callbackURL: "/dashboard" // verify email
+    }, {
+        onRequest: (ctx) => {
+          console.log("ESPERE");
+        },
+        onSuccess: (ctx) => {
+          console.log("Todo bien");
+          router.push("/");
+        },
+        onError: (ctx) => {
+            
+            alert(ctx.error.message);
+        },
+});
   }
 
   return (
