@@ -20,7 +20,8 @@ export function DashboardSidebar() {
   const handleSignOut = async () => {
     const { error } = await authClient.signOut();
     if ( error ) alert('Error al cerrar sesión');
-    router.replace('/');
+    router.refresh();
+    // router.replace('/');
     // await authClient.signOut({
     //   fetchOptions: {
     //     onSuccess: () => {
