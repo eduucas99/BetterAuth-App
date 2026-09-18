@@ -11,15 +11,13 @@ export async function proxy(request: NextRequest) {
     });
 
     if(!session){
-        return NextResponse.redirect(new URL('/auth/login', request.url));
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
     return NextResponse.next();
 }
- 
-// Alternatively, you can use a default export:
-// export default function proxy(request: NextRequest) { ... }
- 
+
+//* Se aplica esta regla a todas las rutas que son del dashboard
 export const config = {
   matcher: '/dashboard/:path*',
 }

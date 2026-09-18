@@ -50,7 +50,8 @@ export function TwoFactorSettings({ isEnabled = false }: TwoFactorSettingsProps)
 
     if (modalAction === 'enable') {
       // TODO: llamar al servidor con la contraseña y usar su respuesta
-      setSetupData(MOCK_SETUP_DATA);
+      // setSetupData(MOCK_SETUP_DATA);
+      console.log({_password})
       return;
     }
 
