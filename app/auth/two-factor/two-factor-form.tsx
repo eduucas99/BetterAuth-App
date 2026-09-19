@@ -2,13 +2,27 @@
 
 import { useState, type SubmitEvent } from "react";
 import { OtpInput } from "../components/otp-input";
+import { authClient } from "@/lib/auth-client";
+import { router } from "better-auth/api";
+import { useRouter } from "next/navigation";
 
 export function TwoFactorForm() {
+  const router = useRouter();
   const [code, setCode] = useState("");
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    console.log("Two factor code:", code);
+    const { error } = await authClient.twoFactor.verifyTotp({
+      code: code, // required, The otp code to verify.
+      trustDevice: true, // If true, the device will be trusted for 30 days. It'll be refreshed on every sign in request within this time.
+    });
+
+    if ( error ){
+      alert(error.message);
+      return;
+    }
+
+    router.replace('/dashboard');
   }
 
   const isComplete = code.length === 6;

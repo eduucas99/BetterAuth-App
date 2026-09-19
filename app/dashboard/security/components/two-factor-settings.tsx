@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { PasswordConfirmModal } from './password-confirm-modal';
 import { TwoFactorSetup } from './two-factor-setup';
+import { authClient } from '../../../../lib/auth-client';
+import { useRouter } from 'next/navigation';
 
 type TwoFactorSettingsProps = {
   isEnabled?: boolean;
@@ -31,7 +33,8 @@ const MOCK_SETUP_DATA: SetupData = {
   ],
 };
 
-export function TwoFactorSettings({ isEnabled = false }: TwoFactorSettingsProps) {
+export function TwoFactorSettings({ isEnabled }: TwoFactorSettingsProps) {
+  const router = useRouter();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [modalAction, setModalAction] = useState<'enable' | 'disable'>('enable');
   const [setupData, setSetupData] = useState<SetupData | null>(null);
@@ -45,26 +48,59 @@ export function TwoFactorSettings({ isEnabled = false }: TwoFactorSettingsProps)
     setShowPasswordModal(false);
   }
 
-  function handlePasswordConfirmed(_password: string) {
+  async function handlePasswordConfirmed(_password: string) {
     setShowPasswordModal(false);
-
+    // TODO: activar 2FA
     if (modalAction === 'enable') {
-      // TODO: llamar al servidor con la contraseña y usar su respuesta
-      // setSetupData(MOCK_SETUP_DATA);
-      console.log({_password})
+      const { data, error } = await authClient.twoFactor.enable({
+        password: _password, // required, The user’s password. Required for email/password accounts.
+      });
+
+      if (error) {
+        alert(error)
+      }
+      setSetupData({
+        totpUri: data.totpURI,
+        secretKey: data.totpURI,
+        backupCodes: data.backupCodes,
+      });
+
       return;
     }
 
     // TODO: desactivar 2FA
+    const { error } = await authClient.twoFactor.disable({
+        password: _password, // The user's password (required for credential accounts)
+    });
+
+    if( error ){
+      alert('2FA no se pudo desactivar');
+      
+      return;
+    }
+
+    alert("2FA desactivado");
+    router.refresh();
   }
 
   function handleCancelSetup() {
     setSetupData(null);
   }
 
-  function handleCompleteSetup() {
-    // TODO: confirmar activación en el servidor
+  async function handleCompleteSetup(verificationCode: String) {
+    const { data, error } = await authClient.twoFactor.verifyTotp({
+      code: verificationCode.toString(), // required, The otp code to verify.
+      trustDevice: false, // If true, the device will be trusted for 30 days. It'll be refreshed on every sign in request within this time.
+    });
+
+    if (error){
+      alert(error.message)
+      return;
+    }
+    console.log({data});
+    alert('2FA Activado correctamente!');
     setSetupData(null);
+    router.refresh();
   }
 
   const modalCopy =

@@ -4,6 +4,8 @@ import { twoFactorClient } from "better-auth/plugins";
 export const authClient = createAuthClient({
     baseURL: "http://localhost:3000",
     plugins:[
-        twoFactorClient()
-    ]
+        twoFactorClient({
+            twoFactorPage:'/auth/two-factor'
+        })
+    ],
 })
